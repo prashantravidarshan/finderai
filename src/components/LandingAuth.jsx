@@ -120,7 +120,7 @@ export default function LandingAuth({ onLogin, onRegister, status, theme, onTogg
 
             <div className="landing-demo-card">
               <div className="landing-demo-label">Example query</div>
-              <div className="landing-demo-text">Show Prashant Aadhaar</div>
+              <div className="landing-demo-text">Find policy clauses on data retention</div>
             </div>
           </section>
 

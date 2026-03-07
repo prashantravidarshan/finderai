@@ -208,16 +208,16 @@ export const APP_LOCALES = [
 
 export const APP_PUBLIC_MENU_GROUPS = [
   {
-    title: "Product",
-    links: ["Capabilities", "Connected Folders", "Search Accuracy", "Run Logs"],
+    title: "Use Cases",
+    links: ["Find by Content", "Find by Hints", "Cross-Source Search", "Instant Summaries"],
+  },
+  {
+    title: "Workflows",
+    links: ["Extract Details", "Generate Output", "Organize Files", "Share Anywhere"],
   },
   {
     title: "Trust",
-    links: ["Security", "Privacy", "Compliance", "Status"],
-  },
-  {
-    title: "Resources",
-    links: ["Docs", "API", "Release Notes", "Support"],
+    links: ["Security", "Privacy", "Compliance", "Support"],
   },
 ];
 

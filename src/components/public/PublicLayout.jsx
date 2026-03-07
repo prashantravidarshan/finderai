@@ -53,6 +53,13 @@ export default function PublicLayout({
     });
   }, [langQuery, locales]);
 
+  const availableColorThemes = useMemo(() => {
+    return (colorThemes || []).filter((item) => item.id !== "default");
+  }, [colorThemes]);
+
+  const compactColorThemes = useMemo(() => availableColorThemes.slice(0, 9), [availableColorThemes]);
+  const remainingColorCount = Math.max(0, availableColorThemes.length - compactColorThemes.length);
+
   useEffect(() => {
     const previous = document.body.style.overflow;
     if (menuOpen || settingsOpen) document.body.style.overflow = "hidden";
@@ -131,16 +138,9 @@ export default function PublicLayout({
       </div>
 
       <div className={`public-menu-overlay ${menuOpen ? "is-open" : ""}`} aria-hidden={!menuOpen}>
-        <div className="public-menu-head">
-          <button className="public-menu-brand brand-button" onClick={onGoHome}>
-            <span className="brand-mark">FQ</span>
-            <span className="brand-text">
-              <strong>Fyndoy</strong>
-              <small>SMART FINDER</small>
-            </span>
-          </button>
-          <button className="public-menu-close" onClick={() => setMenuOpen(false)} aria-label={text.close || "Close"}>
-            {text.close || "Close"}
+        <div className="public-menu-head-simple">
+          <button className="public-settings-close" onClick={() => setMenuOpen(false)} aria-label={text.close || "Close"}>
+            ×
           </button>
         </div>
 
@@ -161,16 +161,10 @@ export default function PublicLayout({
       </div>
 
       <div className={`public-settings-overlay ${settingsOpen ? "is-open" : ""}`} aria-hidden={!settingsOpen}>
-        <div className="public-menu-head">
-          <button className="public-menu-brand brand-button" onClick={onGoHome}>
-            <span className="brand-mark">FQ</span>
-            <span className="brand-text">
-              <strong>Fyndoy</strong>
-              <small>SMART FINDER</small>
-            </span>
-          </button>
-          <button className="public-menu-close" onClick={() => setSettingsOpen(false)} aria-label={text.close || "Close"}>
-            {text.close || "Close"}
+        <div className="public-settings-head">
+          <h2>{text.settingsTitle || "Settings"}</h2>
+          <button className="public-settings-close" onClick={() => setSettingsOpen(false)} aria-label={text.close || "Close"}>
+            ×
           </button>
         </div>
 
@@ -212,7 +206,7 @@ export default function PublicLayout({
 
                 <label>{text.colorTitle || "Color Theme"}</label>
                 <div className="settings-color-grid">
-                  {(showAllColors ? colorThemes : colorThemes.slice(0, 10)).map((item) => (
+                  {(showAllColors ? availableColorThemes : compactColorThemes).map((item) => (
                     <button
                       key={item.id}
                       type="button"
@@ -223,11 +217,16 @@ export default function PublicLayout({
                       <span>{item.label}</span>
                     </button>
                   ))}
-                  {colorThemes.length > 10 ? (
-                    <button type="button" className="settings-more-btn settings-color-more" onClick={() => setShowAllColors((v) => !v)}>
-                      {showAllColors
-                        ? (copy?.settings?.appearance?.showLessColors || "Show less")
-                        : `+${Math.max(0, colorThemes.length - 10)} more`}
+                  {!showAllColors && remainingColorCount > 0 ? (
+                    <button type="button" className="settings-color-item settings-color-more-tile" onClick={() => setShowAllColors(true)}>
+                      <span className="settings-color-dot settings-color-dot-mixed" />
+                      <span>+{remainingColorCount} more</span>
+                    </button>
+                  ) : null}
+                  {showAllColors ? (
+                    <button type="button" className="settings-color-item settings-color-collapse-tile" onClick={() => setShowAllColors(false)}>
+                      <span className="settings-color-dot settings-color-dot-collapse">−</span>
+                      <span>{copy?.settings?.appearance?.showLessColors || "Show fewer"}</span>
                     </button>
                   ) : null}
                 </div>

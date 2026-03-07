@@ -1,12 +1,18 @@
 const EN = {
   home: {
     eyebrow: "Private and secure",
-    titleMain: "Find Files.",
-    titleAccent: "Instantly.",
-    subtitleA: "Enterprise-grade retrieval for regulated documents.",
-    subtitleB: "Built for audits and daily operations.",
+    titleMain: "Ask Once.",
+    titleAccent: "Your System Works.",
+    subtitleA: "Your thinking file agent finds any old or new file from simple hints, across all connected sources.",
+    subtitleB: "It extracts details, generates new outputs, organizes files, and delivers results in seconds.",
     cta: "Get started",
     dashboardCta: "Open dashboard",
+    storyLabel: "Why users switch",
+    valueChips: ["Find from hints only", "Extract any detail", "Generate new data", "Auto organize", "Ready to share instantly"],
+    manualFlow: ["Open many folders", "Remember old names", "Check files one by one", "Still miss the exact file"],
+    agentFlow: ["User asks once", "Agent searches everywhere", "Details extracted + verified", "Results ready in seconds"],
+    manualTime: "Manual: 2-3 hours",
+    agentTime: "With Fyndoy: under 20 seconds",
   },
   public: {
     loginLabel: "Login",
@@ -27,16 +33,16 @@ const EN = {
     menuAriaClose: "Close menu",
     menuGroups: [
       {
-        title: "Product",
-        links: ["Capabilities", "Connected Folders", "Search Accuracy", "Run Logs"],
+        title: "Use Cases",
+        links: ["Find by Content", "Find by Hints", "Cross-Source Search", "Instant Summaries"],
+      },
+      {
+        title: "Workflows",
+        links: ["Extract Details", "Generate Output", "Organize Files", "Share Anywhere"],
       },
       {
         title: "Trust",
-        links: ["Security", "Privacy", "Compliance", "Status"],
-      },
-      {
-        title: "Resources",
-        links: ["Docs", "API", "Release Notes", "Support"],
+        links: ["Security", "Privacy", "Compliance", "Support"],
       },
     ],
   },
