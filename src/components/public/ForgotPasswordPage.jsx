@@ -155,127 +155,145 @@ export default function ForgotPasswordPage({ onRequestOtp, onVerifyOtp, onResetP
 
   return (
     <main className="auth-main auth-main-single">
-      <section className="auth-card">
-        <h1>{auth.forgotTitle || "Forgot password"}</h1>
-        <p>{step === "email" ? (auth.forgotSubtitleEmail || "Enter your email to receive OTP.") : (auth.forgotSubtitleOtp || "Enter OTP and set new password.")}</p>
+      <section className="auth-premium-shell">
+        <aside className="auth-premium-content" aria-hidden="true">
+          <span className="auth-premium-eyebrow">Secure access recovery</span>
+          <h2>Recover access fast with verified OTP flow.</h2>
+          <p>The workflow keeps identity checks simple while maintaining secure reset and instant continuation into your workspace.</p>
+          <div className="auth-premium-chips">
+            <span>Verified reset</span>
+            <span>Guided steps</span>
+            <span>Fast return</span>
+          </div>
+          <ul className="auth-premium-points">
+            <li>Request OTP securely from your registered channel.</li>
+            <li>Verify code with quick input flow.</li>
+            <li>Set a new password and continue immediately.</li>
+          </ul>
+        </aside>
 
-        {step === "email" ? (
-          <form onSubmit={requestOtp}>
-            <div className={`auth-input ${fieldErrors.email ? "is-invalid" : ""}`.trim()}>
-              <span className="auth-input-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M4 6h16v12H4z" />
-                  <path d="m4 7 8 6 8-6" />
-                </svg>
-              </span>
-              <input
-                type="email"
-                className="auth-field"
-                placeholder={auth.emailPlaceholder || "Email address"}
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <button className="auth-submit" type="submit" disabled={busy}>
-              {busy ? (auth.sendingOtp || "Sending...") : (auth.sendOtp || "Send OTP")}
-            </button>
-          </form>
-        ) : step === "otp" ? (
-          <form onSubmit={verifyOtp}>
-            <div className="auth-email-display">
-              <span>{email || "-"}</span>
-              <button
-                type="button"
-                className="auth-link"
-                onClick={() => setStep("email")}
-              >
-                {auth.editEmail || "Edit"}
-              </button>
-            </div>
-            <div className={`otp-row ${fieldErrors.otp ? "is-invalid" : ""}`.trim()} onPaste={onOtpPaste}>
-              {otp.map((d, i) => (
+        <section className="auth-card auth-premium-form">
+          <h1>{auth.forgotTitle || "Forgot password"}</h1>
+          <p>{step === "email" ? (auth.forgotSubtitleEmail || "Enter your email to receive OTP.") : (auth.forgotSubtitleOtp || "Enter OTP and set new password.")}</p>
+
+          {step === "email" ? (
+            <form onSubmit={requestOtp}>
+              <div className={`auth-input ${fieldErrors.email ? "is-invalid" : ""}`.trim()}>
+                <span className="auth-input-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M4 6h16v12H4z" />
+                    <path d="m4 7 8 6 8-6" />
+                  </svg>
+                </span>
                 <input
-                  key={i}
-                  ref={(el) => { otpRefs.current[i] = el; }}
-                  className={`otp-box ${fieldErrors.otp ? "is-invalid" : ""}`.trim()}
-                  inputMode="numeric"
-                  autoComplete={i === 0 ? "one-time-code" : "off"}
-                  maxLength={1}
-                  value={d}
-                  onChange={(e) => updateOtp(i, e.target.value)}
-                  onKeyDown={(e) => onOtpKeyDown(i, e)}
+                  type="email"
+                  className="auth-field"
+                  placeholder={auth.emailPlaceholder || "Email address"}
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
-              ))}
-            </div>
-
-            <div className="auth-otp-actions">
-              <button
-                type="button"
-                className="auth-link"
-                disabled={busy || resendIn > 0}
-                onClick={() => requestOtp()}
-              >
-                {resendIn > 0 ? `${auth.resendIn || "Resend OTP in"} ${resendIn}s` : (auth.resendOtp || "Resend OTP")}
+              </div>
+              <button className="auth-submit" type="submit" disabled={busy}>
+                {busy ? (auth.sendingOtp || "Sending...") : (auth.sendOtp || "Send OTP")}
               </button>
-            </div>
+            </form>
+          ) : step === "otp" ? (
+            <form onSubmit={verifyOtp}>
+              <div className="auth-email-display">
+                <span>{email || "-"}</span>
+                <button
+                  type="button"
+                  className="auth-link"
+                  onClick={() => setStep("email")}
+                >
+                  {auth.editEmail || "Edit"}
+                </button>
+              </div>
+              <div className={`otp-row ${fieldErrors.otp ? "is-invalid" : ""}`.trim()} onPaste={onOtpPaste}>
+                {otp.map((d, i) => (
+                  <input
+                    key={i}
+                    ref={(el) => { otpRefs.current[i] = el; }}
+                    className={`otp-box ${fieldErrors.otp ? "is-invalid" : ""}`.trim()}
+                    inputMode="numeric"
+                    autoComplete={i === 0 ? "one-time-code" : "off"}
+                    maxLength={1}
+                    value={d}
+                    onChange={(e) => updateOtp(i, e.target.value)}
+                    onKeyDown={(e) => onOtpKeyDown(i, e)}
+                  />
+                ))}
+              </div>
 
-            <button className="auth-submit" type="submit" disabled={busy}>
-              {busy ? (auth.verifying || "Verifying...") : (auth.verifyOtp || "Verify OTP")}
-            </button>
-          </form>
-        ) : step === "reset" ? (
-          <form onSubmit={submitReset}>
-            <div className="auth-email-display">
-              <span>{email || "-"}</span>
-              <button
-                type="button"
-                className="auth-link"
-                onClick={() => setStep("email")}
-              >
-                {auth.editEmail || "Edit"}
+              <div className="auth-otp-actions">
+                <button
+                  type="button"
+                  className="auth-link"
+                  disabled={busy || resendIn > 0}
+                  onClick={() => requestOtp()}
+                >
+                  {resendIn > 0 ? `${auth.resendIn || "Resend OTP in"} ${resendIn}s` : (auth.resendOtp || "Resend OTP")}
+                </button>
+              </div>
+
+              <button className="auth-submit" type="submit" disabled={busy}>
+                {busy ? (auth.verifying || "Verifying...") : (auth.verifyOtp || "Verify OTP")}
               </button>
-            </div>
-            <div className={`auth-input ${fieldErrors.newPassword ? "is-invalid" : ""}`.trim()}>
-              <span className="auth-input-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="6" y="10" width="12" height="10" rx="2" />
-                  <path d="M9 10V7a3 3 0 0 1 6 0v3" />
-                </svg>
-              </span>
-              <input
-                type="password"
-                className="auth-field"
-                placeholder={auth.newPasswordPlaceholder || "New password"}
-                autoComplete="new-password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-            </div>
-            <button className="auth-submit" type="submit" disabled={busy}>
-              {busy ? (auth.resettingPassword || "Resetting...") : (auth.resetPassword || "Reset password")}
-            </button>
-          </form>
-        ) : (
-          <div className="auth-success">{auth.passwordResetDone || "Password reset successful. Continue to login."}</div>
-        )}
+            </form>
+          ) : step === "reset" ? (
+            <form onSubmit={submitReset}>
+              <div className="auth-email-display">
+                <span>{email || "-"}</span>
+                <button
+                  type="button"
+                  className="auth-link"
+                  onClick={() => setStep("email")}
+                >
+                  {auth.editEmail || "Edit"}
+                </button>
+              </div>
+              <div className={`auth-input ${fieldErrors.newPassword ? "is-invalid" : ""}`.trim()}>
+                <span className="auth-input-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="6" y="10" width="12" height="10" rx="2" />
+                    <path d="M9 10V7a3 3 0 0 1 6 0v3" />
+                  </svg>
+                </span>
+                <input
+                  type="password"
+                  className="auth-field"
+                  placeholder={auth.newPasswordPlaceholder || "New password"}
+                  autoComplete="new-password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+              </div>
+              <button className="auth-submit" type="submit" disabled={busy}>
+                {busy ? (auth.resettingPassword || "Resetting...") : (auth.resetPassword || "Reset password")}
+              </button>
+            </form>
+          ) : (
+            <div className="auth-success">{auth.passwordResetDone || "Password reset successful. Continue to login."}</div>
+          )}
 
-        <div className="auth-links">
-          <a
-            className="auth-link"
-            href="#/login"
-            onClick={(e) => {
-              e.preventDefault();
-              onGoLogin();
-            }}
-          >
-            {auth.backToLogin || "Back to login"}
-          </a>
-        </div>
+          <div className="auth-links">
+            <a
+              className="auth-link"
+              href="#/login"
+              onClick={(e) => {
+                e.preventDefault();
+                onGoLogin();
+              }}
+            >
+              {auth.backToLogin || "Back to login"}
+            </a>
+          </div>
 
-        {message ? <div className="auth-success">{message}</div> : null}
-        {localError ? <div className="auth-error">{localError}</div> : null}
-        {errorMessage ? <div className="auth-error">{errorMessage}</div> : null}
+          {message ? <div className="auth-success">{message}</div> : null}
+          {localError ? <div className="auth-error">{localError}</div> : null}
+          {errorMessage ? <div className="auth-error">{errorMessage}</div> : null}
+        </section>
       </section>
     </main>
   );

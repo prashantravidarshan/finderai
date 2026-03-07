@@ -62,107 +62,126 @@ export default function SignupPage({ onSignup, onGoLogin, errorMessage, copy }) 
 
   return (
     <main className="auth-main auth-main-single">
-      <section className="auth-card">
-        <h1>{auth.signupTitle || "Create account"}</h1>
-        <p>{auth.signupSubtitle || "Start your private workspace."}</p>
+      <section className="auth-premium-shell">
+        <aside className="auth-premium-content" aria-hidden="true">
+          <span className="auth-premium-eyebrow">Private AI workspace</span>
+          <h2>Create one secure workspace for search, extraction, and delivery.</h2>
+          <p>Your agent understands natural requests, retrieves from connected sources, and prepares high-quality outputs with context.</p>
+          <div className="auth-premium-chips">
+            <span>Reasoning-first</span>
+            <span>Source-aware</span>
+            <span>Ready to share</span>
+          </div>
+          <ul className="auth-premium-points">
+            <li>Find by meaning, even with weak hints.</li>
+            <li>Improve unclear content before extraction.</li>
+            <li>Generate drafts with referenced attachments.</li>
+          </ul>
+        </aside>
 
-        <form onSubmit={submit}>
-          <div className={`auth-input ${fieldErrors.fullName ? "is-invalid" : ""}`.trim()}>
-            <span className="auth-input-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="8" r="3.5" />
-                <path d="M5 20a7 7 0 0 1 14 0" />
-              </svg>
-            </span>
-            <input
-              className="auth-field"
-              placeholder={auth.fullNamePlaceholder || "Full name"}
-              autoComplete="name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-            />
-          </div>
-          <div className={`auth-input ${fieldErrors.email ? "is-invalid" : ""}`.trim()}>
-            <span className="auth-input-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M4 6h16v12H4z" />
-                <path d="m4 7 8 6 8-6" />
-              </svg>
-            </span>
-            <input
-              type="email"
-              className="auth-field"
-              placeholder={auth.emailPlaceholder || "Email address"}
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div className={`auth-input ${fieldErrors.password ? "is-invalid" : ""}`.trim()}>
-            <span className="auth-input-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="6" y="10" width="12" height="10" rx="2" />
-                <path d="M9 10V7a3 3 0 0 1 6 0v3" />
-              </svg>
-            </span>
-            <input
-              type={showPassword ? "text" : "password"}
-              className="auth-field"
-              placeholder={auth.passwordPlaceholder || "Password"}
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <button
-              type="button"
-              className="auth-input-action"
-              onClick={() => setShowPassword((v) => !v)}
-              aria-label={showPassword ? "Hide password" : "Show password"}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
+        <section className="auth-card auth-premium-form">
+          <h1>{auth.signupTitle || "Create account"}</h1>
+          <p>{auth.signupSubtitle || "Start your private workspace."}</p>
+
+          <form onSubmit={submit}>
+            <div className={`auth-input ${fieldErrors.fullName ? "is-invalid" : ""}`.trim()}>
+              <span className="auth-input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="8" r="3.5" />
+                  <path d="M5 20a7 7 0 0 1 14 0" />
+                </svg>
+              </span>
+              <input
+                className="auth-field"
+                placeholder={auth.fullNamePlaceholder || "Full name"}
+                autoComplete="name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
+            </div>
+            <div className={`auth-input ${fieldErrors.email ? "is-invalid" : ""}`.trim()}>
+              <span className="auth-input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 6h16v12H4z" />
+                  <path d="m4 7 8 6 8-6" />
+                </svg>
+              </span>
+              <input
+                type="email"
+                className="auth-field"
+                placeholder={auth.emailPlaceholder || "Email address"}
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div className={`auth-input ${fieldErrors.password ? "is-invalid" : ""}`.trim()}>
+              <span className="auth-input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="6" y="10" width="12" height="10" rx="2" />
+                  <path d="M9 10V7a3 3 0 0 1 6 0v3" />
+                </svg>
+              </span>
+              <input
+                type={showPassword ? "text" : "password"}
+                className="auth-field"
+                placeholder={auth.passwordPlaceholder || "Password"}
+                autoComplete="new-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                className="auth-input-action"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="auth-strength">
+              <div className="auth-strength-bar" style={{ width: `${strength}%` }} />
+            </div>
+
+            <div className="auth-checks">
+              {checks.map((c) => (
+                <div key={c.label} className={c.ok ? "ok" : "bad"}>
+                  <span>{c.ok ? (auth.passwordChecks?.ok || APP_MESSAGES.en.auth.passwordChecks.ok || "OK") : (auth.passwordChecks?.pending || APP_MESSAGES.en.auth.passwordChecks.pending || "--")}</span>
+                  <span>{c.label}</span>
+                </div>
+              ))}
+            </div>
+
+            <button className="auth-submit" type="submit" disabled={busy}>
+              {busy ? (auth.creating || "Creating...") : (auth.createAccount || "Create account")}
             </button>
+          </form>
+
+          <div className="auth-links">
+            <span className="auth-link-inline">
+              {(auth.alreadyAccount || "Already have an account?")}{" "}
+              <a
+                className="auth-link"
+                href="#/login"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onGoLogin();
+                }}
+              >
+                {auth.signIn || "Sign in"}
+              </a>
+            </span>
           </div>
 
-          <div className="auth-strength">
-            <div className="auth-strength-bar" style={{ width: `${strength}%` }} />
-          </div>
-
-          <div className="auth-checks">
-            {checks.map((c) => (
-              <div key={c.label} className={c.ok ? "ok" : "bad"}>
-                <span>{c.ok ? (auth.passwordChecks?.ok || APP_MESSAGES.en.auth.passwordChecks.ok || "OK") : (auth.passwordChecks?.pending || APP_MESSAGES.en.auth.passwordChecks.pending || "--")}</span>
-                <span>{c.label}</span>
-              </div>
-            ))}
-          </div>
-
-          <button className="auth-submit" type="submit" disabled={busy}>
-            {busy ? (auth.creating || "Creating...") : (auth.createAccount || "Create account")}
-          </button>
-        </form>
-
-        <div className="auth-links">
-          <span className="auth-link-inline">
-            {(auth.alreadyAccount || "Already have an account?")}{" "}
-            <a
-              className="auth-link"
-              href="#/login"
-              onClick={(e) => {
-                e.preventDefault();
-                onGoLogin();
-              }}
-            >
-              {auth.signIn || "Sign in"}
-            </a>
-          </span>
-        </div>
-
-        {localError ? <div className="auth-error">{localError}</div> : null}
-        {errorMessage ? <div className="auth-error">{errorMessage}</div> : null}
+          {localError ? <div className="auth-error">{localError}</div> : null}
+          {errorMessage ? <div className="auth-error">{errorMessage}</div> : null}
+        </section>
       </section>
+
     </main>
   );
 }

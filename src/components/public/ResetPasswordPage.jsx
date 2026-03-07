@@ -42,66 +42,107 @@ export default function ResetPasswordPage({ onResetPassword, onGoLogin, onGoForg
 
   return (
     <main className="auth-main auth-main-single">
-      <section className="auth-card">
-        <h1>{auth.resetPassword || "Reset password"}</h1>
-        <p>{auth.forgotSubtitleOtp || "Enter OTP and set a new password."}</p>
+      <section className="auth-premium-shell">
+        <aside className="auth-premium-content" aria-hidden="true">
+          <span className="auth-premium-eyebrow">Password reset</span>
+          <h2>Securely reset and continue with zero friction.</h2>
+          <p>Submit verified OTP, create a strong password, and go back to your workspace without losing flow.</p>
+          <div className="auth-premium-chips">
+            <span>Verified OTP</span>
+            <span>Strong credentials</span>
+            <span>Quick re-entry</span>
+          </div>
+          <ul className="auth-premium-points">
+            <li>Validation checks in one step.</li>
+            <li>Built for secure and fast recovery.</li>
+            <li>Direct return to login after success.</li>
+          </ul>
+        </aside>
 
-        <form onSubmit={submit}>
-          <input
-            type="email"
-            className={`auth-field ${fieldErrors.email ? "is-invalid" : ""}`.trim()}
-            placeholder={auth.emailPlaceholder || "Email address"}
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            className={`auth-field ${fieldErrors.otp ? "is-invalid" : ""}`.trim()}
-            placeholder={auth.otp || "OTP"}
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-          />
-          <input
-            type="password"
-            className={`auth-field ${fieldErrors.newPassword ? "is-invalid" : ""}`.trim()}
-            placeholder={auth.newPasswordPlaceholder || "New password"}
-            autoComplete="new-password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-          />
-          <button className="auth-submit" type="submit" disabled={busy}>
-            {busy ? (auth.resettingPassword || "Resetting...") : (auth.resetPassword || "Reset password")}
-          </button>
-        </form>
+        <section className="auth-card auth-premium-form">
+          <h1>{auth.resetPassword || "Reset password"}</h1>
+          <p>{auth.forgotSubtitleOtp || "Enter OTP and set a new password."}</p>
 
-        <div className="auth-links auth-links-split">
-          <a
-            className="auth-link"
-            href="#/forgot-password"
-            onClick={(e) => {
-              e.preventDefault();
-              onGoForgot();
-            }}
-          >
-            {auth.sendOtp || "Request OTP"}
-          </a>
-          <a
-            className="auth-link"
-            href="#/login"
-            onClick={(e) => {
-              e.preventDefault();
-              onGoLogin();
-            }}
-          >
-            {auth.backToLogin || "Back to login"}
-          </a>
-        </div>
+          <form onSubmit={submit}>
+            <div className={`auth-input ${fieldErrors.email ? "is-invalid" : ""}`.trim()}>
+              <span className="auth-input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 6h16v12H4z" />
+                  <path d="m4 7 8 6 8-6" />
+                </svg>
+              </span>
+              <input
+                type="email"
+                className="auth-field"
+                placeholder={auth.emailPlaceholder || "Email address"}
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div className={`auth-input ${fieldErrors.otp ? "is-invalid" : ""}`.trim()}>
+              <span className="auth-input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M6 9h12M6 13h12M6 17h7" />
+                </svg>
+              </span>
+              <input
+                className="auth-field"
+                placeholder={auth.otp || "OTP"}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+              />
+            </div>
+            <div className={`auth-input ${fieldErrors.newPassword ? "is-invalid" : ""}`.trim()}>
+              <span className="auth-input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="6" y="10" width="12" height="10" rx="2" />
+                  <path d="M9 10V7a3 3 0 0 1 6 0v3" />
+                </svg>
+              </span>
+              <input
+                type="password"
+                className="auth-field"
+                placeholder={auth.newPasswordPlaceholder || "New password"}
+                autoComplete="new-password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+            <button className="auth-submit" type="submit" disabled={busy}>
+              {busy ? (auth.resettingPassword || "Resetting...") : (auth.resetPassword || "Reset password")}
+            </button>
+          </form>
 
-        {success ? <div className="auth-success">{success}</div> : null}
-        {localError ? <div className="auth-error">{localError}</div> : null}
-        {errorMessage ? <div className="auth-error">{errorMessage}</div> : null}
+          <div className="auth-links auth-links-split">
+            <a
+              className="auth-link"
+              href="#/forgot-password"
+              onClick={(e) => {
+                e.preventDefault();
+                onGoForgot();
+              }}
+            >
+              {auth.sendOtp || "Request OTP"}
+            </a>
+            <a
+              className="auth-link"
+              href="#/login"
+              onClick={(e) => {
+                e.preventDefault();
+                onGoLogin();
+              }}
+            >
+              {auth.backToLogin || "Back to login"}
+            </a>
+          </div>
+
+          {success ? <div className="auth-success">{success}</div> : null}
+          {localError ? <div className="auth-error">{localError}</div> : null}
+          {errorMessage ? <div className="auth-error">{errorMessage}</div> : null}
+        </section>
       </section>
     </main>
   );
