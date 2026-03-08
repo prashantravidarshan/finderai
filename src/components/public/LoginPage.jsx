@@ -37,19 +37,30 @@ export default function LoginPage({ onLogin, onGoSignup, onGoForgot, errorMessag
     <main className="auth-main auth-main-single">
       <section className="auth-premium-shell">
         <aside className="auth-premium-content" aria-hidden="true">
-          <span className="auth-premium-eyebrow">AI file workspace</span>
-          <h2>From one prompt to verified output in seconds.</h2>
-          <p>Search, extract, improve, organize, and prepare share-ready delivery across connected sources with one reliable flow.</p>
+          <span className="auth-premium-eyebrow">AI file operations</span>
+          <h2>Ask once. Get verified outcomes, ready to act.</h2>
+          <p>Fyndoy understands intent, retrieves from connected work sources, improves weak content, and prepares delivery-ready output.</p>
           <div className="auth-premium-chips">
-            <span>Intent aware</span>
+            <span>Intent reasoning</span>
             <span>Connected retrieval</span>
-            <span>Draft + delivery</span>
+            <span>Delivery-ready output</span>
+          </div>
+          <div className="auth-premium-signals">
+            <span><i />Encrypted</span>
+            <span><i />Remote sources</span>
+            <span><i />Instant handoff</span>
           </div>
           <ul className="auth-premium-points">
-            <li>Works on hints, not only file names.</li>
-            <li>Finds details from text, scans, and media content.</li>
-            <li>Prepares communication with attachment context.</li>
+            <li>Finds results from meaning, not only exact filenames.</li>
+            <li>Extracts details from documents, scans, and media content.</li>
+            <li>Prepares drafts with relevant attachment context.</li>
           </ul>
+          <div className="auth-premium-minirow">
+            <span>Ops</span>
+            <span>Legal</span>
+            <span>Finance</span>
+            <span>Support</span>
+          </div>
         </aside>
 
         <section className="auth-card auth-premium-form">

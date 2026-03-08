@@ -65,18 +65,29 @@ export default function SignupPage({ onSignup, onGoLogin, errorMessage, copy }) 
       <section className="auth-premium-shell">
         <aside className="auth-premium-content" aria-hidden="true">
           <span className="auth-premium-eyebrow">Private AI workspace</span>
-          <h2>Create one secure workspace for search, extraction, and delivery.</h2>
-          <p>Your agent understands natural requests, retrieves from connected sources, and prepares high-quality outputs with context.</p>
+          <h2>Create a secure AI workspace.</h2>
+          <p>One secure environment to search across connected sources, extract accurate details, and generate communication-ready outputs.</p>
           <div className="auth-premium-chips">
-            <span>Reasoning-first</span>
-            <span>Source-aware</span>
-            <span>Ready to share</span>
+            <span>Unified sources</span>
+            <span>Semantic retrieval</span>
+            <span>Action-ready drafts</span>
+          </div>
+          <div className="auth-premium-signals">
+            <span><i />Access control</span>
+            <span><i />Source sync</span>
+            <span><i />Workflow ready</span>
           </div>
           <ul className="auth-premium-points">
-            <li>Find by meaning, even with weak hints.</li>
-            <li>Improve unclear content before extraction.</li>
-            <li>Generate drafts with referenced attachments.</li>
+            <li>Interprets request context before retrieval starts.</li>
+            <li>Improves unclear content and extracts usable evidence.</li>
+            <li>Builds share-ready drafts with attachment awareness.</li>
           </ul>
+          <div className="auth-premium-minirow">
+            <span>Enterprise</span>
+            <span>SMB</span>
+            <span>Teams</span>
+            <span>Studio</span>
+          </div>
         </aside>
 
         <section className="auth-card auth-premium-form">

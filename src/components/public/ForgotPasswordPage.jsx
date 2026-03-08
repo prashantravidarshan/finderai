@@ -107,7 +107,7 @@ export default function ForgotPasswordPage({ onRequestOtp, onVerifyOtp, onResetP
     if (!/^\d{6}$/.test(code)) nextErrors.otp = true;
     if (Object.keys(nextErrors).length) {
       setFieldErrors(nextErrors);
-      setLocalError(auth.invalidOtpFields || "Enter valid OTP and strong password (8+ chars).");
+      setLocalError(auth.invalidOtp || "Enter valid OTP.");
       return;
     }
 
@@ -158,18 +158,29 @@ export default function ForgotPasswordPage({ onRequestOtp, onVerifyOtp, onResetP
       <section className="auth-premium-shell">
         <aside className="auth-premium-content" aria-hidden="true">
           <span className="auth-premium-eyebrow">Secure access recovery</span>
-          <h2>Recover access fast with verified OTP flow.</h2>
-          <p>The workflow keeps identity checks simple while maintaining secure reset and instant continuation into your workspace.</p>
+          <h2>Recover access quickly with verified identity flow.</h2>
+          <p>Request OTP, complete verification, and continue in your workspace with secure password reset in a guided sequence.</p>
           <div className="auth-premium-chips">
-            <span>Verified reset</span>
-            <span>Guided steps</span>
-            <span>Fast return</span>
+            <span>OTP verification</span>
+            <span>Guided recovery</span>
+            <span>Secure re-entry</span>
+          </div>
+          <div className="auth-premium-signals">
+            <span><i />Time-bound OTP</span>
+            <span><i />Verified reset</span>
+            <span><i />Session safe</span>
           </div>
           <ul className="auth-premium-points">
-            <li>Request OTP securely from your registered channel.</li>
-            <li>Verify code with quick input flow.</li>
-            <li>Set a new password and continue immediately.</li>
+            <li>Send OTP to your verified contact channel.</li>
+            <li>Validate code in a fast multi-step workflow.</li>
+            <li>Reset password and return without friction.</li>
           </ul>
+          <div className="auth-premium-minirow">
+            <span>Email</span>
+            <span>OTP</span>
+            <span>Reset</span>
+            <span>Continue</span>
+          </div>
         </aside>
 
         <section className="auth-card auth-premium-form">

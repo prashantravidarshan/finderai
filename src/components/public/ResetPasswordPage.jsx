@@ -45,18 +45,29 @@ export default function ResetPasswordPage({ onResetPassword, onGoLogin, onGoForg
       <section className="auth-premium-shell">
         <aside className="auth-premium-content" aria-hidden="true">
           <span className="auth-premium-eyebrow">Password reset</span>
-          <h2>Securely reset and continue with zero friction.</h2>
-          <p>Submit verified OTP, create a strong password, and go back to your workspace without losing flow.</p>
+          <h2>Reset credentials securely and continue instantly.</h2>
+          <p>Submit verified OTP, set a strong password, and return to your workspace with a clean and secure recovery flow.</p>
           <div className="auth-premium-chips">
             <span>Verified OTP</span>
             <span>Strong credentials</span>
             <span>Quick re-entry</span>
+          </div>
+          <div className="auth-premium-signals">
+            <span><i />Identity check</span>
+            <span><i />Policy compliant</span>
+            <span><i />Access restored</span>
           </div>
           <ul className="auth-premium-points">
             <li>Validation checks in one step.</li>
             <li>Built for secure and fast recovery.</li>
             <li>Direct return to login after success.</li>
           </ul>
+          <div className="auth-premium-minirow">
+            <span>Secure</span>
+            <span>Reliable</span>
+            <span>Private</span>
+            <span>Fast</span>
+          </div>
         </aside>
 
         <section className="auth-card auth-premium-form">
