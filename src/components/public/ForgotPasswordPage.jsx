@@ -136,7 +136,7 @@ export default function ForgotPasswordPage({ onRequestOtp, onVerifyOtp, onResetP
     if (!newPassword || newPassword.length < 8) nextErrors.newPassword = true;
     if (Object.keys(nextErrors).length) {
       setFieldErrors(nextErrors);
-      setLocalError(auth.invalidOtpFields || "Enter valid OTP and strong password (8+ chars).");
+      setLocalError(auth.invalidOtp || "Enter valid OTP.");
       return;
     }
 
