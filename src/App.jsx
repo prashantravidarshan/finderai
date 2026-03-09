@@ -7,7 +7,6 @@ import RunHistory from "./components/RunHistory.jsx";
 import ChatThread from "./components/chat/ChatThread.jsx";
 import ChatComposer from "./components/chat/ChatComposer.jsx";
 import FolderBoard from "./components/chat/FolderBoard.jsx";
-import ConnectFolderModal from "./components/ConnectFolderModal.jsx";
 import PreviewModal from "./components/PreviewModal.jsx";
 import ProcessingCard from "./components/ProcessingCard.jsx";
 
@@ -140,7 +139,6 @@ export default function App() {
   const [processingDrawerOpen, setProcessingDrawerOpen] = useState(false);
   const [analysisTab, setAnalysisTab] = useState("flow");
   const [indexStatus, setIndexStatus] = useState(null);
-  const [connectOpen, setConnectOpen] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewFile, setPreviewFile] = useState(null);
@@ -584,10 +582,9 @@ export default function App() {
     try {
       await apiJson("/api/index/connect", { method: "POST", token, body: { root_path: rootPath } });
       await refreshIndexStatus();
+      await refreshFileList();
       const ws = copy?.workspace?.status || APP_MESSAGES.en.workspace.status;
-      const connected = ws.connected || "Connected:";
-      const indexing = ws.indexingStarted || "indexing started";
-      setStatus(`${connected} ${rootPath} (${indexing})`);
+      setStatus(ws.indexingStarted || "Sync started.");
     } catch (e) {
       setUploadProgress(null);
       if (!shouldIgnoreErrorMessage(e.message)) setStatus(e.message);
@@ -651,6 +648,18 @@ export default function App() {
   }, [token]);
 
   useEffect(() => {
+    if (!token) return undefined;
+    const roots = Array.isArray(indexStatus?.roots) ? indexStatus.roots : [];
+    const hasActiveSync = roots.some((root) => root?.in_progress);
+    if (!hasActiveSync) return undefined;
+    const t = setInterval(() => {
+      refreshFileList();
+      refreshConversations();
+    }, 3200);
+    return () => clearInterval(t);
+  }, [token, indexStatus]);
+
+  useEffect(() => {
     if (!folderPanel?.id) return;
     const folderId = folderPanel.id;
     const scoped = (conversations || [])
@@ -674,6 +683,21 @@ export default function App() {
       const tpl = ws.selectedFiles || "Selected {count} files (will upload on send).";
       setStatus(interpolate(tpl, { count: picked.length }));
     }
+  }
+
+  function onPickFiles(e) {
+    const picked = Array.from(e.target.files || []);
+    if (!picked.length) return;
+    setSelectedFiles((prev) => [...(Array.isArray(prev) ? prev : []), ...picked]);
+    const ws = copy?.workspace?.status || APP_MESSAGES.en.workspace.status;
+    const tpl = ws.selectedFiles || "Selected {count} files (will upload on send).";
+    setStatus(interpolate(tpl, { count: picked.length }));
+  }
+
+  async function handleConnectLiveFolder() {
+    const selected = await browseLocalFolder();
+    if (!selected) return;
+    await connectLocalFolder(selected);
   }
 
   async function uploadSelectedIfAny() {
@@ -712,6 +736,19 @@ export default function App() {
     const userMsg = { role: "user", content: text, ts: nowIso(), _id: `u_${Date.now()}_${Math.random().toString(36).slice(2, 6)}` };
     const thinkingId = `thinking-${Date.now()}`;
 
+    const tempConversationId = !conversationRef ? `tmp_${Date.now().toString(36)}` : "";
+    if (tempConversationId) {
+      setConversations((prev) => [
+        {
+          conversation_id: tempConversationId,
+          title: text,
+          last_time: nowIso(),
+        },
+        ...(Array.isArray(prev) ? prev : []).filter((c) => c?.conversation_id !== tempConversationId),
+      ]);
+      setConversationId(tempConversationId);
+    }
+
     setMessages((m) => [
       ...m,
       userMsg,
@@ -741,6 +778,16 @@ export default function App() {
       });
 
       if (!conversationId) setConversationId(data.conversation_id);
+      if (tempConversationId && data.conversation_id) {
+        setConversations((prev) =>
+          (Array.isArray(prev) ? prev : []).map((row) =>
+            row?.conversation_id === tempConversationId
+              ? { ...row, conversation_id: data.conversation_id, title: row.title || text, last_time: nowIso() }
+              : row
+          )
+        );
+        setConversationId(data.conversation_id);
+      }
       if (!conversationId && folderContextId && data.conversation_id) {
         setChatFolderMap((prev) => ({ ...(prev || {}), [data.conversation_id]: folderContextId }));
         setPendingFolderId("");
@@ -996,7 +1043,7 @@ export default function App() {
       unreadCounts={unreadCounts}
       isSettingsActive={isSettingsRoute}
       compact={compactSidebar}
-      activeRailTab={isIndexRoute ? "index" : isFilesRoute ? "files" : "chats"}
+      activeRailTab={isSettingsRoute ? "settings" : isIndexRoute ? "index" : isFilesRoute ? "files" : "chats"}
       onNew={(folderId) => newChat(folderId)}
       onOpenFolderPanel={openFolderPanel}
       onSelect={loadConversation}
@@ -1021,7 +1068,7 @@ export default function App() {
   );
 
   const dashboardMain = (
-    <div className="workspace-chat-main workspace-page min-h-[560px] lg:flex lg:h-full lg:min-h-0 lg:flex-col">
+    <div className="workspace-chat-main workspace-page min-h-[420px] lg:flex lg:h-full lg:min-h-0 lg:flex-col">
       {(status || uploadProgress) ? (
         <div className="border-b border-[var(--border-color)] px-3 py-2 lg:px-4">
           <div className="rounded-xl border border-[var(--border-color)] bg-[var(--surface-elev)] px-3 py-2 text-xs text-[var(--text-secondary)]">
@@ -1056,7 +1103,8 @@ export default function App() {
             onSend={handleComposerSend}
             disabled={!token || uploading}
             onPickFolder={onPickFolder}
-            onConnectLocal={() => setConnectOpen(true)}
+            onPickFiles={onPickFiles}
+            onConnectLocal={handleConnectLiveFolder}
             thinkingMode={thinkingMode}
             setThinkingMode={setThinkingMode}
             model={chatModel}
@@ -1082,7 +1130,8 @@ export default function App() {
             onSend={handleComposerSend}
             disabled={!token || uploading}
             onPickFolder={onPickFolder}
-            onConnectLocal={() => setConnectOpen(true)}
+            onPickFiles={onPickFiles}
+            onConnectLocal={handleConnectLiveFolder}
             thinkingMode={thinkingMode}
             setThinkingMode={setThinkingMode}
             model={chatModel}
@@ -1181,15 +1230,6 @@ export default function App() {
                 ? filesMain
                 : dashboardMain
         }
-      />
-
-      <ConnectFolderModal
-        open={connectOpen}
-        onClose={() => setConnectOpen(false)}
-        onConnect={connectLocalFolder}
-        onBrowse={browseLocalFolder}
-        loading={connecting}
-        copy={copy}
       />
 
       <PreviewModal open={previewOpen} onClose={() => setPreviewOpen(false)} token={token} file={previewFile} onDownload={downloadFile} copy={copy} />

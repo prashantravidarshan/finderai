@@ -19,6 +19,7 @@ export default function ChatComposer({
   onSend,
   disabled,
   onPickFolder,
+  onPickFiles,
   onConnectLocal,
   thinkingMode,
   setThinkingMode,
@@ -312,16 +313,8 @@ export default function ChatComposer({
             ) : null}
 
             <div className="chat-composer-main-row">
-              <div className="chat-composer-brand" aria-label="Fyndoy Smart Finder">
-                <span className="chat-composer-brand-mark" aria-hidden="true">FQ</span>
-                <span className="chat-composer-brand-text">
-                  <strong>Fyndoy</strong>
-                  <small>SMART FINDER</small>
-                </span>
-              </div>
-
               <div className="chat-composer-upload">
-                <UploadMenu embedded onPickFolder={onPickFolder} onConnectLocal={onConnectLocal} copy={copy} />
+                <UploadMenu embedded onPickFolder={onPickFolder} onPickFiles={onPickFiles} onConnectLocal={onConnectLocal} copy={copy} />
               </div>
 
               <textarea

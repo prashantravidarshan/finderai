@@ -2,10 +2,11 @@ import React, { useEffect, useRef, useState } from "react";
 import { clsx } from "../../utils/format.js";
 import { APP_MESSAGES } from "../../config/appConfig.js";
 
-export default function UploadMenu({ onPickFolder, onConnectLocal, embedded = false, copy }) {
+export default function UploadMenu({ onPickFolder, onPickFiles, onConnectLocal, embedded = false, copy }) {
   const chatText = copy?.chat || APP_MESSAGES.en.chat;
   const [open, setOpen] = useState(false);
   const folderRef = useRef(null);
+  const fileRef = useRef(null);
   const rootRef = useRef(null);
 
   useEffect(() => {
@@ -21,6 +22,11 @@ export default function UploadMenu({ onPickFolder, onConnectLocal, embedded = fa
   function pickFolder() {
     setOpen(false);
     folderRef.current?.click();
+  }
+
+  function pickFiles() {
+    setOpen(false);
+    fileRef.current?.click();
   }
 
   function connectLocal() {
@@ -52,6 +58,13 @@ export default function UploadMenu({ onPickFolder, onConnectLocal, embedded = fa
         className="hidden"
         onChange={onPickFolder}
       />
+      <input
+        ref={fileRef}
+        type="file"
+        multiple
+        className="hidden"
+        onChange={onPickFiles}
+      />
 
       {open ? (
         <div
@@ -61,14 +74,14 @@ export default function UploadMenu({ onPickFolder, onConnectLocal, embedded = fa
           )}
         >
           <button className="w-full text-left rounded-xl px-3 py-2 text-sm hover:bg-[var(--surface-hover)]" onClick={pickFolder}>
-            {chatText.uploadFolder || "Upload folder (copy)..."}
+            {chatText.uploadFolders || "Upload folders"}
+          </button>
+          <button className="mt-1 w-full text-left rounded-xl px-3 py-2 text-sm hover:bg-[var(--surface-hover)]" onClick={pickFiles}>
+            {chatText.uploadFiles || "Upload files"}
           </button>
           <button className="mt-1 w-full text-left rounded-xl px-3 py-2 text-sm hover:bg-[var(--surface-hover)]" onClick={connectLocal}>
-            {chatText.connectLocal || "Connect local folder (no re-upload)..."}
+            {chatText.connectLiveFolder || "Link live folder"}
           </button>
-          <div className="px-3 py-2 text-[11px] text-[var(--text-muted)]">
-            {chatText.connectHint || "Connect local gives real-time access + incremental indexing."}
-          </div>
         </div>
       ) : null}
     </div>

@@ -20,6 +20,18 @@ function capitalizeFirstWord(text) {
   return trimmed.slice(0, firstSpace).charAt(0).toUpperCase() + trimmed.slice(1);
 }
 
+function escapeRegExp(text) {
+  return String(text || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function highlightParts(text, query) {
+  const source = String(text || "");
+  const q = String(query || "").trim();
+  if (!q) return [source];
+  const pattern = new RegExp(`(${escapeRegExp(q)})`, "ig");
+  return source.split(pattern);
+}
+
 function RailIcon({ children }) {
   return <span className="workspace-rail-icon" aria-hidden="true">{children}</span>;
 }
@@ -71,6 +83,7 @@ export default function SidebarChats({
   onNotify,
 }) {
   const chatText = copy?.chat || APP_MESSAGES.en.chat;
+  const hideFileRailButton = activeRailTab === "settings";
 
   const [query, setQuery] = useState("");
   const [chatMenuFor, setChatMenuFor] = useState("");
@@ -92,6 +105,8 @@ export default function SidebarChats({
   const [titleOverrides, setTitleOverrides] = useLocalStorage("fyndoy_title_overrides", {});
   const [pinnedList, setPinnedList] = useLocalStorage("fyndoy_pinned_chats", []);
   const [archivedList, setArchivedList] = useLocalStorage("fyndoy_archived_chats", []);
+  const [pinnedFolders, setPinnedFolders] = useLocalStorage("fyndoy_pinned_folders", []);
+  const [archivedFolders, setArchivedFolders] = useLocalStorage("fyndoy_archived_folders", []);
   const [fallbackFolders, setFallbackFolders] = useLocalStorage("fyndoy_chat_folders", []);
   const [fallbackFolderMap, setFallbackFolderMap] = useLocalStorage("fyndoy_chat_folder_map", {});
   const foldersState = chatFolders ?? fallbackFolders;
@@ -192,14 +207,25 @@ export default function SidebarChats({
         const folderId = folderMapState?.[cid] || "";
         const folderName = folderById.get(folderId)?.name || "";
         const unread = Number(unreadCounts?.[cid] || 0);
-        return { ...c, _displayTitle: title, _folderId: folderId, _folderName: folderName, _unread: unread };
+        const sourceText = [
+          c?.last_message,
+          c?.message_preview,
+          c?.snippet,
+          c?.latest_message,
+          c?.content,
+        ]
+          .filter(Boolean)
+          .map((v) => String(v))
+          .join(" ");
+        return { ...c, _displayTitle: title, _folderId: folderId, _folderName: folderName, _unread: unread, _sourceText: sourceText };
       })
       .filter((c) => {
         if (!q) return true;
         return (
           c._displayTitle.toLowerCase().includes(q) ||
           c.conversation_id.toLowerCase().includes(q) ||
-          c._folderName.toLowerCase().includes(q)
+          c._folderName.toLowerCase().includes(q) ||
+          c._sourceText.toLowerCase().includes(q)
         );
       });
 
@@ -214,10 +240,21 @@ export default function SidebarChats({
   }, [archived, folderMapState, conversations, folderById, pinned, q, titleOverrides, unreadCounts]);
 
   const visibleFolders = useMemo(() => {
-    const source = folders || [];
+    const archivedSet = new Set(Array.isArray(archivedFolders) ? archivedFolders : []);
+    const source = (folders || []).filter((f) => !archivedSet.has(f.id));
     if (!q) return source;
     return source.filter((f) => f.name.toLowerCase().includes(q));
-  }, [folders, q]);
+  }, [folders, q, archivedFolders]);
+
+  const orderedFolders = useMemo(() => {
+    const pinnedSet = new Set(Array.isArray(pinnedFolders) ? pinnedFolders : []);
+    return [...visibleFolders].sort((a, b) => {
+      const ap = pinnedSet.has(a.id) ? 1 : 0;
+      const bp = pinnedSet.has(b.id) ? 1 : 0;
+      if (ap !== bp) return bp - ap;
+      return a.name.localeCompare(b.name);
+    });
+  }, [visibleFolders, pinnedFolders]);
 
   const folderChats = useMemo(() => {
     if (!selectedFolderId) return [];
@@ -227,6 +264,29 @@ export default function SidebarChats({
   const visibleChats = selectedFolderId
     ? filtered.filter((c) => !c._folderId)
     : filtered.filter((c) => !c._folderId);
+
+  const archivedFolderView = useMemo(() => {
+    const archivedSet = new Set(Array.isArray(archivedList) ? archivedList : []);
+    const archivedFolderSet = new Set(Array.isArray(archivedFolders) ? archivedFolders : []);
+    if (!archivedFolderSet.size) return [];
+    return (folders || [])
+      .filter((folder) => archivedFolderSet.has(folder.id))
+      .map((folder) => {
+        const chats = (conversations || [])
+          .filter((c) => (folderMapState?.[c.conversation_id] || "") === folder.id)
+          .filter((c) => archivedSet.has(c.conversation_id))
+          .map((c) => ({
+            conversation_id: c.conversation_id,
+            _displayTitle: capitalizeFirstWord(titleOverrides[c.conversation_id] || c.title || c.conversation_id.slice(0, 10)),
+            _unread: Number(unreadCounts?.[c.conversation_id] || 0),
+            _folderId: folder.id,
+            _folderName: folder.name,
+            last_time: c.last_time,
+            _sourceText: String(c?.last_message || c?.snippet || c?.message_preview || ""),
+          }));
+        return { folder, chats };
+      });
+  }, [archivedFolders, archivedList, folders, conversations, folderMapState, titleOverrides, unreadCounts]);
 
   useEffect(() => {
     if (!activeId) return;
@@ -392,10 +452,14 @@ export default function SidebarChats({
 
   function archiveFolderChats(folderId) {
     const ids = filtered.filter((c) => c._folderId === folderId).map((c) => c.conversation_id);
-    if (!ids.length) return;
     setArchivedList((prev) => {
       const next = new Set(Array.isArray(prev) ? prev : []);
       ids.forEach((id) => next.add(id));
+      return Array.from(next);
+    });
+    setArchivedFolders((prev) => {
+      const next = new Set(Array.isArray(prev) ? prev : []);
+      next.add(folderId);
       return Array.from(next);
     });
     notify(chatText.archiveFolder || "Archive", "success");
@@ -432,6 +496,8 @@ export default function SidebarChats({
     if (selectedFolderId === fid) {
       setSelectedFolderId("");
     }
+    setPinnedFolders((prev) => (Array.isArray(prev) ? prev.filter((id) => id !== fid) : []));
+    setArchivedFolders((prev) => (Array.isArray(prev) ? prev.filter((id) => id !== fid) : []));
     notify(chatText.folderDeleted || "Folder deleted.", "success");
     setFolderDeleteModal({ open: false, id: "", name: "" });
   }
@@ -463,7 +529,13 @@ export default function SidebarChats({
         }}
       >
         <div className="workspace-chat-row-head">
-          <div className="workspace-chat-name">{c._displayTitle}</div>
+          <div className="workspace-chat-name">
+            {highlightParts(c._displayTitle, q).map((part, idx) => (
+              q && part.toLowerCase() === q.toLowerCase()
+                ? <mark key={`${cid}-name-${idx}`}>{part}</mark>
+                : <React.Fragment key={`${cid}-name-${idx}`}>{part}</React.Fragment>
+            ))}
+          </div>
           <div className="workspace-chat-time-wrap">
             {isPinned ? (
               <span className="workspace-chat-pin-icon" title={chatText.pinChat || "Pinned"}>
@@ -563,6 +635,15 @@ export default function SidebarChats({
             <span className="workspace-folder-badge">{c._folderName}</span>
           </div>
         ) : null}
+        {q && c._sourceText ? (
+          <div className="workspace-chat-sub">
+            {highlightParts(c._sourceText.slice(0, 120), q).map((part, idx) => (
+              q && part.toLowerCase() === q.toLowerCase()
+                ? <mark key={`${cid}-sub-${idx}`}>{part}</mark>
+                : <React.Fragment key={`${cid}-sub-${idx}`}>{part}</React.Fragment>
+            ))}
+          </div>
+        ) : null}
 
       </div>
     );
@@ -570,6 +651,8 @@ export default function SidebarChats({
 
   function renderFolderRow(folder) {
     const isActive = selectedFolderId === folder.id;
+    const pinnedFolderSet = new Set(Array.isArray(pinnedFolders) ? pinnedFolders : []);
+    const isPinnedFolder = pinnedFolderSet.has(folder.id);
     return (
       <div
         key={folder.id}
@@ -585,7 +668,17 @@ export default function SidebarChats({
         }}
       >
         <div className="workspace-chat-row-head">
-          <div className="workspace-chat-name">{folder.name}</div>
+          <div className="workspace-chat-name">
+            {isPinnedFolder ? (
+              <span className="workspace-chat-pin-icon" title={chatText.pinChat || "Pinned"}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M14 4v4l3 3v2H7v-2l3-3V4h4Z" />
+                  <path d="M12 13v7" />
+                </svg>
+              </span>
+            ) : null}
+            <span>{folder.name}</span>
+          </div>
           <div className="workspace-chat-time-wrap">
             <div className="workspace-chat-actions">
               <button
@@ -628,10 +721,19 @@ export default function SidebarChats({
                     onClick={() => startRenameFolder(folder)}
                   />
                   <MenuItem
-                    label={chatText.unpinFolder || "Unpin"}
+                    label={isPinnedFolder ? (chatText.unpinFolder || "Unpin") : (chatText.pinFolder || "Pin")}
                     icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 4v4l3 3v2H7v-2l3-3V4h4Z" /><path d="m6 6 12 12" /></svg>}
                     onClick={() => {
-                      unpinFolderChats(folder.id);
+                      if (isPinnedFolder) {
+                        setPinnedFolders((prev) => (Array.isArray(prev) ? prev.filter((id) => id !== folder.id) : []));
+                        unpinFolderChats(folder.id);
+                      } else {
+                        setPinnedFolders((prev) => {
+                          const next = new Set(Array.isArray(prev) ? prev : []);
+                          next.add(folder.id);
+                          return Array.from(next);
+                        });
+                      }
                       setFolderMenuFor("");
                     }}
                   />
@@ -671,7 +773,7 @@ export default function SidebarChats({
   }
 
   return (
-    <div className="flex h-[42vh] min-h-[360px] flex-col lg:h-full">
+    <div className="flex h-auto min-h-[280px] flex-col lg:h-full lg:min-h-[360px]">
       <div className="flex min-h-0 flex-1">
         <div className="workspace-rail flex w-[72px] shrink-0 flex-col items-center border-r border-[var(--border-color)] py-4">
           <div className="flex flex-col items-center gap-3">
@@ -687,27 +789,21 @@ export default function SidebarChats({
                 </svg>
               </RailIcon>
             </button>
-            <button type="button" className={clsx("workspace-rail-btn", activeRailTab === "index" ? "is-active" : "")} data-tip={chatText.tabIndex || "Index"} onClick={onOpenIndex}>
-              <RailIcon>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M4 4h16v4H4zM4 10h16v10H4z" />
-                  <path d="M8 14h8M8 18h6" />
-                </svg>
-              </RailIcon>
-            </button>
-            <button type="button" className={clsx("workspace-rail-btn", activeRailTab === "files" ? "is-active" : "")} data-tip={chatText.tabFiles || "Files"} onClick={onOpenFiles}>
-              <RailIcon>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" />
-                </svg>
-              </RailIcon>
-            </button>
+            {hideFileRailButton ? null : (
+              <button type="button" className={clsx("workspace-rail-btn", activeRailTab === "files" ? "is-active" : "")} data-tip={chatText.tabFiles || "Files"} onClick={onOpenFiles}>
+                <RailIcon>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" />
+                  </svg>
+                </RailIcon>
+              </button>
+            )}
           </div>
 
           <div className="mt-auto flex flex-col items-center gap-3" ref={userMenuRef}>
             <button
               type="button"
-              className={clsx("workspace-rail-btn", isSettingsActive ? "workspace-rail-btn-premium is-active" : "")}
+              className={clsx("workspace-rail-btn", (isSettingsActive || activeRailTab === "settings") ? "workspace-rail-btn-premium is-active" : "")}
               data-tip={chatText.tabSettings || "Settings"}
               onClick={onGoSettings}
             >
@@ -786,7 +882,11 @@ export default function SidebarChats({
                   className="workspace-icon-btn"
                   aria-label={chatText.newChat || "New chat"}
                   title={chatText.newChat || "New chat"}
-                  onClick={() => onNew?.(selectedFolderId)}
+                  onClick={() => {
+                    setSelectedFolderId("");
+                    setProjectsOpen(false);
+                    onNew?.("");
+                  }}
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M12 5v14M5 12h14" />
@@ -834,22 +934,22 @@ export default function SidebarChats({
                 <div className="workspace-section-head">
                   <div className="workspace-section-title">
                     <h3>{chatText.projects || "Projects"}</h3>
-                    <button
-                      type="button"
-                      className="workspace-section-toggle"
-                      onClick={() => setProjectsOpen((v) => !v)}
-                    >
+                  <button
+                    type="button"
+                    className={clsx("workspace-section-toggle", projectsOpen ? "is-open" : "")}
+                    onClick={() => setProjectsOpen((v) => !v)}
+                  >
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="m6 9 6 6 6-6" />
                       </svg>
                     </button>
                   </div>
                 </div>
-                {visibleFolders.length ? (
+                {projectsOpen ? (
                   <>
-                    {projectsOpen ? (
+                    {orderedFolders.length ? (
                       <div className="workspace-chat-list">
-                        {(showAllFolders ? visibleFolders : visibleFolders.slice(0, 5)).map((folder) => {
+                        {(showAllFolders ? orderedFolders : orderedFolders.slice(0, 5)).map((folder) => {
                           const isActive = selectedFolderId === folder.id;
                           const projectChats = filtered.filter((c) => c._folderId === folder.id);
                           return (
@@ -891,7 +991,7 @@ export default function SidebarChats({
                         })}
                       </div>
                     ) : null}
-                    {projectsOpen && visibleFolders.length > 5 ? (
+                    {orderedFolders.length > 5 ? (
                       <button
                         type="button"
                         className="workspace-section-action workspace-folder-more-btn"
@@ -902,11 +1002,44 @@ export default function SidebarChats({
                     ) : null}
                   </>
                 ) : (
+                  null
+                )}
+                {projectsOpen && !orderedFolders.length ? (
                   <div className="px-2 pt-1 text-xs text-[var(--text-muted)]">
                     {chatText.noProjects || "No projects yet."}
                   </div>
-                )}
+                ) : null}
             </section>
+
+            {archivedFolderView.length ? (
+              <section className="workspace-chat-section">
+                <div className="workspace-section-head">
+                  <div className="workspace-section-title">
+                    <h3>{chatText.archived || "Archived"}</h3>
+                  </div>
+                </div>
+                <div className="workspace-chat-list">
+                  {archivedFolderView.map((item) => (
+                    <div key={`arch-folder-${item.folder.id}`} className="workspace-project-block">
+                      <div className="workspace-chat-row workspace-folder-row">
+                        <div className="workspace-chat-row-head">
+                          <div className="workspace-chat-name">
+                            <span>{item.folder.name}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <ul className="workspace-project-chat-list">
+                        {item.chats.map((chat) => (
+                          <li key={`arch-chat-${chat.conversation_id}`} className="workspace-project-chat-li">
+                            {renderChatRow(chat, { inProject: true })}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ) : null}
 
             <section className="workspace-chat-section">
               <div className="workspace-section-head">
@@ -914,7 +1047,7 @@ export default function SidebarChats({
                   <h3>{chatText.allChats || "All chats"}</h3>
                   <button
                     type="button"
-                    className="workspace-section-toggle"
+                    className={clsx("workspace-section-toggle", chatsOpen ? "is-open" : "")}
                     onClick={() => setChatsOpen((v) => !v)}
                   >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -943,7 +1076,12 @@ export default function SidebarChats({
           <MenuItem
             label={chatText.newChat || "New chat"}
             icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>}
-            onClick={() => { onNew?.(selectedFolderId); setNewMenuOpen(false); }}
+            onClick={() => {
+              setSelectedFolderId("");
+              setProjectsOpen(false);
+              onNew?.("");
+              setNewMenuOpen(false);
+            }}
           />
           <MenuItem
             label={chatText.newFolder || "New project"}
